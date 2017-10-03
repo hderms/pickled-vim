@@ -286,10 +286,6 @@ function! ale#engine#SetResults(buffer, loclist) abort
 
     if g:ale_set_quickfix || g:ale_set_loclist
         call ale#list#SetLists(a:buffer, a:loclist)
-
-        if l:linting_is_done
-            call ale#list#CloseWindowIfNeeded(a:buffer)
-        endif
     endif
 
     if exists('*ale#statusline#Update')
@@ -379,7 +375,7 @@ function! ale#engine#FixLocList(buffer, linter_name, loclist) abort
         \}
 
         if has_key(l:old_item, 'filename')
-        \&& l:old_item.filename[:len(s:temp_dir) - 1] isnot# s:temp_dir
+        \&& !ale#path#IsTempName(l:old_item.filename)
             " Use the filename given.
             " Temporary files are assumed to be for this buffer,
             " and the filename is not included then, because it looks bad
@@ -577,7 +573,7 @@ function! ale#engine#ProcessChain(buffer, linter, chain_index, input) abort
 
     if has_key(a:linter, 'command_chain')
         while l:chain_index < len(a:linter.command_chain)
-            " Run a chain of commands, one asychronous command after the other,
+            " Run a chain of commands, one asynchronous command after the other,
             " so that many programs can be run in a sequence.
             let l:chain_item = a:linter.command_chain[l:chain_index]
 

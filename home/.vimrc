@@ -64,8 +64,8 @@
   Plug 'https://github.com/vim-scripts/dbext.vim.git'
   Plug 'https://github.com/w0rp/ale.git'
   Plug 'https://github.com/ternjs/tern_for_vim.git'
-  
- 
+
+
   call plug#end()
 
 " Section: configuration
@@ -75,8 +75,10 @@
   " I like pretty colors
   " Note: Use !silent to avoid error at startup before vim-plug first
   " installed
-  silent! colorscheme onedark
+  "silent! colorscheme monokai
   "silent! colorscheme atom-dark
+
+  silent! colorscheme wombat_modified
   "silent! colorscheme jellybeans
   "silent! colorscheme ir_black
 
@@ -98,8 +100,6 @@
   "sm:    flashes matching brackets or parentheses
   set showmatch
 
-  " Change <Leader>
-  let mapleader = ","
 
   " Set temporary directory (don't litter local dir with swp/tmp files)
   set directory=/tmp/
@@ -207,7 +207,7 @@
   vmap <leader>t<C-l> :Align =><CR>
 
   " Toggle NERDTree with <leader>d
-  map <silent> <leader>d :execute 'NERDTreeToggle ' . getcwd()<CR>
+  map <silent> <leader>nt :NERDTreeToggle<CR>
 
   " TextMate fuzzy finder with <leader>t
   map <silent> <leader>t :CtrlP<CR>
@@ -265,6 +265,8 @@
 " Section: airline plugin
   let g:airline_powerline_fonts = 1
   let g:airline_skip_empty_sections = 1
+  let g:Powerline_symbols = 'fancy'
+
 
 " Section vim-easy-align plugin
   " Start interactive EasyAlign in visual mode (e.g. vipga)
@@ -369,6 +371,26 @@
 " Section: vim-javascript
   " Enable jsdoc syntax
   let g:javascript_plugin_jsdoc = 1
+
+  "bindings
+  "
+  map <silent> <LocalLeader>ws :%s/\s\+$//<CR>
+
+  " Highlight trailing whitespace
+   autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
+   autocmd BufRead,InsertLeave * match ExtraWhitespace /\s\+$/
+  " " Set up highlight group & retain through colorscheme changes
+   highlight ExtraWhitespace ctermbg=red guibg=red
+   autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red
+   map <silent> <LocalLeader>hws :highlight clear ExtraWhitespace<CR>
+  "
+  " " Highlight too-long lines
+   autocmd BufRead,InsertEnter,InsertLeave * 2match LineLengthError /\%126v.*/
+   highlight LineLengthError ctermbg=black guibg=black
+   autocmd ColorScheme * highlight LineLengthError ctermbg=black guibg=black
+   " clipboard
+   set clipboard=unnamed
+
 
 " Section: project specific vimrc
   set exrc

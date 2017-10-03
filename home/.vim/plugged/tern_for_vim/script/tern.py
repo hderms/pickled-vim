@@ -148,6 +148,8 @@ def tern_relativeFile():
   filename = vim.eval("expand('%:p')")
   if PY2:
     filename = filename.decode(vim.eval('&encoding'))
+  if platform.system().lower()=='windows':
+    return filename[len(tern_projectDir()) + 1:].replace('\\', '/')
   return filename[len(tern_projectDir()) + 1:]
 
 def tern_bufferSlice(buf, pos, end):
@@ -177,7 +179,7 @@ def tern_bufferFragment():
       start = i
 
   if start is None: start = max(0, line - 50)
-  end = min(len(buf) - 1, line + 20)
+  end = min(len(buf), line + 20)
   return {"type": "part",
           "name": tern_relativeFile(),
           "text": tern_bufferSlice(buf, start, end),
@@ -317,7 +319,7 @@ def tern_lookupDocumentation(browse=False):
         return result
     doc = ((doc and doc + "\n\n") or "") + "See " + url
   if doc:
-    vim.command("call tern#PreviewInfo(" + json.dumps(doc) + ")")
+    vim.command("call tern#PreviewInfo(" + json.dumps(doc, ensure_ascii=False) + ")")
   else:
     print("no documentation found")
 
@@ -379,7 +381,14 @@ def tern_refs():
                  "col": col,
                  "filename": filename,
                  "text": name + " (file not loaded)" if len(text)==0 else text[0]})
-  vim.command("call setloclist(0," + json.dumps(refs) + ") | lopen")
+
+  vim.command("call setloclist(0," + json.dumps(refs) + ")")
+  if vim.eval("g:tern_show_loc_after_refs") == '1':
+    vim.command("lopen")
+  else:
+    curRow, curCol = vim.current.window.cursor
+    index = next((i for i,ref in enumerate(refs) if ref["lnum"] == curRow), None)
+    if index is not None: vim.command(str(index + 1) + "ll")
 
 # Copied here because Python 2.6 and lower don't have it built in, and
 # python 3.0 and higher don't support old-style cmp= args to the sort
@@ -454,5 +463,10 @@ def tern_rename(newName):
   if len(external):
     tern_sendBuffer(external)
 
+  vim.command("call setloclist(0," + json.dumps(changes) + ")")
   if vim.eval("g:tern_show_loc_after_rename") == '1':
-    vim.command("call setloclist(0," + json.dumps(changes) + ") | lopen")
+    vim.command("lopen")
+  else:
+    curRow, curCol = vim.current.window.cursor
+    index = next((i for i,change in enumerate(changes) if change["lnum"] == curRow), None)
+    if index is not None: vim.command(str(index + 1) + "ll")
